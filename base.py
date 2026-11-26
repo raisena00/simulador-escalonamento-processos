@@ -195,6 +195,49 @@ def PRIORIDADE(preemptivo, execucao, espera, restante, chegada, prioridade):
     tempo_chegada = list(chegada)
     prioridade_temp = list(prioridade)
 
+    processo_em_execucao = None
+    processos_finalizados = []
+
+    for tempo_atual in range(1, MAXIMO_TEMPO_EXECUCAO):
+
+        processo_mais_prioritario = None
+        for processo in range(n_processos):
+            ja_chegou = tempo_chegada[processo] <= tempo_atual
+            ja_terminou = processo in processos_finalizados
+
+            if ja_chegou and not ja_terminou:
+                if processo_mais_prioritario is None or prioridade_temp[processo] < prioridade_temp[processo_mais_prioritario]:
+                    processo_mais_prioritario = processo
+
+        if processo_em_execucao is None:
+            processo_em_execucao = processo_mais_prioritario
+        elif preemptivo and prioridade_temp[processo_mais_prioritario] < prioridade_temp[processo_em_execucao]:
+            processo_em_execucao = processo_mais_prioritario
+
+        if processo_em_execucao is None:
+            print("tempo[" + str(tempo_atual) + "]: nenhum processo pronto (CPU ociosa)")
+            continue
+
+        print("tempo[" + str(tempo_atual) + "]: processo[" + str(processo_em_execucao) + "] restante=" +
+              str(tempo_restante[processo_em_execucao]) +
+              " prioridade=" + str(prioridade_temp[processo_em_execucao]))
+
+        for processo in range(n_processos):
+            ja_chegou = tempo_chegada[processo] <= tempo_atual
+            ja_terminou = processo in processos_finalizados
+
+            if ja_chegou and not ja_terminou and processo != processo_em_execucao:
+                tempo_espera[processo] = tempo_espera[processo] + 1
+
+        tempo_restante[processo_em_execucao] = tempo_restante[processo_em_execucao] - 1
+
+        if tempo_restante[processo_em_execucao] == 0:
+            processos_finalizados.append(processo_em_execucao)
+            processo_em_execucao = None
+
+            if len(processos_finalizados) == n_processos:
+                break
+
     imprime_stats(tempo_espera)
 
 
