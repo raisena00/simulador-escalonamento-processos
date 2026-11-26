@@ -139,9 +139,51 @@ def SJF(preemptivo, execucao, espera, restante, chegada):
     tempo_restante = list(restante)
     tempo_chegada = list(chegada)
 
-    # implementar codigo do SJF preemptivo e nao preemptivo
-    # ...
-    #
+    #define que a CPU está vazia, pois None significa "nenhum processo" (não é um índice válido)
+    processo_em_execucao = None
+    processos_finalizados = []
+
+    for tempo_atual in range(1, MAXIMO_TEMPO_EXECUCAO):
+
+        processo_mais_curto = None
+        for processo in range(n_processos):
+            ja_chegou = tempo_chegada[processo] <= tempo_atual
+            ja_terminou = processo in processos_finalizados
+
+            if ja_chegou and not ja_terminou:
+                #se o processo chegou e ainda não terminou, será feita a validação se o tempo restante do processo do loop 
+                #é mais curto que o prcesso atual na variavel "processo_mais_curto"
+                if processo_mais_curto is None or tempo_restante[processo] < tempo_restante[processo_mais_curto]:
+                    processo_mais_curto = processo
+        #decide quem usa a CPU
+        if processo_em_execucao is None:
+            processo_em_execucao = processo_mais_curto
+        elif preemptivo and tempo_restante[processo_mais_curto] < tempo_restante[processo_em_execucao]:
+            processo_em_execucao = processo_mais_curto
+
+        if processo_em_execucao is None:
+            print("tempo[" + str(tempo_atual) + "]: nenhum processo pronto (CPU ociosa)")
+            continue
+
+        print("tempo[" + str(tempo_atual) + "]: processo[" + str(processo_em_execucao) + "] restante=" +
+              str(tempo_restante[processo_em_execucao]))
+
+        #loop apenas pra calcular o tempo de espera dos processo
+        for processo in range(n_processos):
+            ja_chegou = tempo_chegada[processo] <= tempo_atual
+            ja_terminou = processo in processos_finalizados
+
+            if ja_chegou and not ja_terminou and processo != processo_em_execucao:
+                tempo_espera[processo] = tempo_espera[processo] + 1
+
+        tempo_restante[processo_em_execucao] = tempo_restante[processo_em_execucao] - 1
+
+        if tempo_restante[processo_em_execucao] == 0:
+            processos_finalizados.append(processo_em_execucao)
+            processo_em_execucao = None
+
+            if len(processos_finalizados) == n_processos:
+                break
 
     imprime_stats(tempo_espera)
 
@@ -153,10 +195,6 @@ def PRIORIDADE(preemptivo, execucao, espera, restante, chegada, prioridade):
     tempo_chegada = list(chegada)
     prioridade_temp = list(prioridade)
 
-    # implementar codigo do Prioridade preemptivo e nao preemptivo
-    # ...
-    #
-
     imprime_stats(tempo_espera)
 
 
@@ -165,9 +203,6 @@ def Round_Robin(execucao, espera, restante):
     tempo_espera = list(espera)
     tempo_restante = list(restante)
 
-    # implementar codigo do Round-Robin
-    # ...
-    #
 
     imprime_stats(tempo_espera)
 
