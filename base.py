@@ -246,6 +246,47 @@ def Round_Robin(execucao, espera, restante):
     tempo_espera = list(espera)
     tempo_restante = list(restante)
 
+    quantum = int(input("Digite o quantum:  "))
+
+    processo_em_execucao = 0
+    tempo_usado_no_quantum = 0
+    processos_finalizados = []
+
+    for tempo_atual in range(1, MAXIMO_TEMPO_EXECUCAO):
+
+        print("tempo[" + str(tempo_atual) + "]: processo[" + str(processo_em_execucao) + "] restante=" +
+              str(tempo_restante[processo_em_execucao]))
+
+        for processo in range(n_processos):
+            ja_terminou = processo in processos_finalizados
+
+            if not ja_terminou and processo != processo_em_execucao:
+                tempo_espera[processo] = tempo_espera[processo] + 1
+
+        tempo_restante[processo_em_execucao] = tempo_restante[processo_em_execucao] - 1
+        tempo_usado_no_quantum = tempo_usado_no_quantum + 1
+
+        terminou = tempo_restante[processo_em_execucao] == 0
+        if terminou:
+            processos_finalizados.append(processo_em_execucao)
+
+            if len(processos_finalizados) == n_processos:
+                break
+
+        if terminou or tempo_usado_no_quantum == quantum:
+            tempo_usado_no_quantum = 0
+
+            #faz a fila circular: se passou do último, entçao o processo_em_execucao volta para o primeiro
+            while True:
+                processo_em_execucao = processo_em_execucao + 1
+
+                # se passou do último processo, volta para o primeiro
+                if processo_em_execucao == n_processos:
+                    processo_em_execucao = 0
+
+                # se esse processo ainda não terminou, ele é o escolhido
+                if processo_em_execucao not in processos_finalizados:
+                    break
 
     imprime_stats(tempo_espera)
 
